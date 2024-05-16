@@ -120,8 +120,8 @@ function App() {
       getIceCandicate(
         roomRef,
         peerConnection,
-        "calleeCandicate",
-        "callerCandicate"
+        "hostCandicate",
+        "gusetCandicate"
       );
     } else {
       const roomRef = doc(firestore, "rooms", id || "");
@@ -144,8 +144,8 @@ function App() {
       getIceCandicate(
         roomRef,
         peerConnection,
-        "callerCandicate",
-        "calleeCandicate"
+        "gusetCandicate",
+        "hostCandicate"
       );
     }
   }
