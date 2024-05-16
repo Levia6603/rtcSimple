@@ -2,9 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import dbRef, {
   connectedRef,
   firestore,
-  peerConnection,
   roomId,
   userName,
+  server,
 } from "./firebase/firebase";
 import {
   child,
@@ -55,9 +55,8 @@ function App() {
     const candicatesCollection = collection(roomRef, localName);
     try {
       peerConnection.onicecandidate = async (event) => {
-        if (event.candidate) {
-          await addDoc(candicatesCollection, event.candidate.toJSON());
-        }
+        event.candidate &&
+          (await addDoc(candicatesCollection, event.candidate.toJSON()));
         peerConnection.onicecandidateerror = (error) => {
           console.log("error", error);
         };
@@ -73,7 +72,7 @@ function App() {
         });
       };
     } catch (err) {
-      console.log(err);
+      console.error(err);
     }
   }
 
@@ -87,6 +86,8 @@ function App() {
       audio: true,
     });
     const remoteStream = new MediaStream();
+
+    const peerConnection = new RTCPeerConnection(server);
 
     localStream.getTracks().forEach((track) => {
       peerConnection.addTrack(track, localStream);
