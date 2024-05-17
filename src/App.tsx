@@ -1,10 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import dbRef, {
   connectedRef,
   firestore,
   roomId,
   userName,
-  server,
+  peerConnection,
 } from "./firebase/firebase";
 import {
   child,
@@ -42,7 +42,6 @@ function App() {
   const participantRef = child(dbRef, "participants");
   const user = useSelector((state: RootStateType) => state.user.currentUser);
   const dispatch = useDispatch();
-  const [identity, setidenity] = useState("");
   const localRef = useRef<RefProps>();
   const remoteRef = useRef<RefProps>();
 
@@ -87,18 +86,23 @@ function App() {
     });
     const remoteStream = new MediaStream();
 
-    const peerConnection = new RTCPeerConnection(server);
-
     localStream.getTracks().forEach((track) => {
       peerConnection.addTrack(track, localStream);
     });
+    peerConnection.ontrack = (event) => {
+      event.streams[0].getTracks().forEach((track) => {
+        remoteStream.addTrack(track);
+      });
+      if (remoteRef.current) {
+        remoteRef.current.srcObject = remoteStream;
+      }
+    };
 
-    if (localRef.current && remoteRef.current && localStream) {
+    if (localRef.current && localStream) {
       localRef.current.srcObject = localStream;
-      remoteRef.current.srcObject = remoteStream;
     }
     if (!roomId) {
-      const roomRef = doc(collection(firestore, "rooms"), id || "");
+      const roomRef = doc(firestore, "rooms", id || "");
       await setDoc(roomRef, {});
 
       const offerDescription = await peerConnection.createOffer();
@@ -121,7 +125,7 @@ function App() {
         roomRef,
         peerConnection,
         "hostCandicate",
-        "gusetCandicate"
+        "guestCandicate"
       );
     } else {
       const roomRef = doc(firestore, "rooms", id || "");
@@ -144,13 +148,36 @@ function App() {
       getIceCandicate(
         roomRef,
         peerConnection,
-        "gusetCandicate",
+        "guestCandicate",
         "hostCandicate"
       );
     }
   }
 
+  // async function setConnection() {
+  //   const localStream = await navigator.mediaDevices.getUserMedia({
+  //     video: true,
+  //     audio: true,
+  //   });
+  //   const remoteStream = new MediaStream();
+
+  //   localStream.getTracks().forEach((track) => {
+  //     peerConnection.addTrack(track, localStream);
+  //   });
+  //   peerConnection.ontrack=(event)=>{
+  //     event.
+  //   }
+
+  //   if (localRef.current && localStream) {
+  //     localRef.current.srcObject = localStream;
+  //   }
+  //   if (remoteRef.current) {
+  //     remoteRef.current.srcObject = remoteStream;
+  //   }
+  // }
+
   useEffect(() => {
+    getConnection();
     onValue(connectedRef, (snap) => {
       if (snap.val()) {
         const defaultPreferences = {
@@ -165,7 +192,7 @@ function App() {
           })
         );
         if (roomId) {
-          setidenity("guest");
+          // setidenity("guest");
           const userRef = child(participantRef, "guest");
           set(userRef, {
             userName,
@@ -174,7 +201,7 @@ function App() {
           });
           onDisconnect(userRef).remove();
         } else {
-          setidenity("host");
+          // setidenity("host");
           const userRef = child(participantRef, "host");
           set(userRef, {
             userName,
@@ -204,9 +231,6 @@ function App() {
       });
     }
   }, [user]);
-  useEffect(() => {
-    getConnection();
-  }, [identity]);
   return (
     <>
       <video
@@ -224,9 +248,3 @@ function App() {
 }
 
 export default App;
-
-// peerConnection.ontrack = (event) => {
-//   event.streams[0].getTracks().forEach((track) => {
-//     remoteStream.addTrack(track);
-//   });
-// };
