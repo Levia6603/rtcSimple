@@ -43,3 +43,19 @@ const server = {
   iceCandidatePoolSize: 10,
 };
 export const peerConnection = new RTCPeerConnection(server);
+
+const socket = new WebSocket(
+  "wss://s-apse1b-nss-211.asia-southeast1.firebasedatabase.app/.ws?v=5&p=1:1049705353237:web:f1dad4ab1305d9c9ac3e1c&ns=webrtcsimple-a91f9-default-rtdb"
+);
+
+socket.onopen = function () {
+  console.log("WebSocket is connected.");
+};
+
+socket.onerror = function (error) {
+  console.error("WebSocket Error: ", error);
+};
+
+socket.onclose = function (event) {
+  console.log("WebSocket connection closed: ", event);
+};

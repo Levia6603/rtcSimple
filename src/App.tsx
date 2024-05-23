@@ -154,28 +154,6 @@ function App() {
     }
   }
 
-  // async function setConnection() {
-  //   const localStream = await navigator.mediaDevices.getUserMedia({
-  //     video: true,
-  //     audio: true,
-  //   });
-  //   const remoteStream = new MediaStream();
-
-  //   localStream.getTracks().forEach((track) => {
-  //     peerConnection.addTrack(track, localStream);
-  //   });
-  //   peerConnection.ontrack=(event)=>{
-  //     event.
-  //   }
-
-  //   if (localRef.current && localStream) {
-  //     localRef.current.srcObject = localStream;
-  //   }
-  //   if (remoteRef.current) {
-  //     remoteRef.current.srcObject = remoteStream;
-  //   }
-  // }
-
   useEffect(() => {
     getConnection();
     onValue(connectedRef, (snap) => {
